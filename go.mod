@@ -1,3 +1,3 @@
-module https://github.com/moewiz/go-microservice
+module github.com/moewiz/go-microservice
 
-go 1.13
+go 1.16
