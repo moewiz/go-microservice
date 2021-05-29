@@ -15,13 +15,11 @@ func main() {
 	l := log.New(os.Stdout, "moewiz-service", log.LstdFlags)
 
 	// Create the handlers
-	hh := handlers.NewHello(l)
-	gh := handlers.NewGoodbye(l)
+	productsHandler := handlers.NewProducts(l)
 
 	// Create a new serve mux and register the handlers
 	sm := http.NewServeMux()
-	sm.Handle("/", hh)
-	sm.Handle("/goodbye", gh)
+	sm.Handle("/", productsHandler)
 
 	// Create a server
 	server := &http.Server{
