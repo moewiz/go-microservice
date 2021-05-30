@@ -27,8 +27,8 @@ func main() {
 	postRouter := r.Methods("POST").Subrouter()
 	postRouter.HandleFunc("/products", productsHandler.AddProduct)
 
-	// putRouter := r.Methods("PUT").Subrouter()
-	// putRouter.HandleFunc("/products/{id:[0-9]+}", productsHandler.PutProducts)
+	putRouter := r.Methods("PUT").Subrouter()
+	putRouter.HandleFunc("/products/{id:[0-9]+}", productsHandler.UpdateProduct)
 
 	// Create a server
 	server := &http.Server{

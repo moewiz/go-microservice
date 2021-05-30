@@ -3,7 +3,9 @@ package handlers
 import (
 	"log"
 	"net/http"
+	"strconv"
 
+	"github.com/gorilla/mux"
 	"github.com/moewiz/go-microservice/data"
 )
 
@@ -43,13 +45,31 @@ func (p *Products) AddProduct(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusCreated)
 }
 
-// func (p *Products) PutProduct(w http.ResponseWriter, r *http.Request) {
-// 	vars := mux.Vars(r)
-// 	id, err := strconv.Atoi(vars["id"])
-// 	if err != nil {
-// 		http.Error(w, "Unable to convert id", http.StatusBadRequest)
-// 		return
-// 	}
+func (p *Products) UpdateProduct(w http.ResponseWriter, r *http.Request) {
+	p.l.Println("Handle PUT product")
 
-// 	p.l.Println("Handle PUT Product", id)
-// }
+	vars := mux.Vars(r)
+	id, err := strconv.Atoi(vars["id"])
+	if err != nil {
+		http.Error(w, "Unable to convert ID", http.StatusBadRequest)
+		return
+	}
+
+	product := &data.Product{}
+	if err := product.FromJSON(r.Body); err != nil {
+		http.Error(w, "Unable to unmarshal json", http.StatusBadRequest)
+		return
+	}
+
+	err = data.UpdateProduct(id, product)
+	if err == data.ErrorProductNotFound {
+		http.Error(w, "Product not found", http.StatusNotFound)
+		return
+	}
+	if err != nil {
+		http.Error(w, "Cannot update product", http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+}
