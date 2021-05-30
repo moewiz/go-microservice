@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"context"
 	"log"
 	"net/http"
 	"strconv"
@@ -20,6 +21,7 @@ func NewProducts(l *log.Logger) *Products {
 
 // GetProducts returns the products from the data storage
 func (p *Products) GetProducts(w http.ResponseWriter, r *http.Request) {
+	p.l.Println("Handle GET products")
 	// fetch the products from the data storage
 	productList := data.GetProducts()
 
@@ -33,21 +35,14 @@ func (p *Products) GetProducts(w http.ResponseWriter, r *http.Request) {
 
 func (p *Products) AddProduct(w http.ResponseWriter, r *http.Request) {
 	p.l.Println("Handle POST product")
+	product := r.Context().Value(KeyProduct{}).(data.Product)
 
-	product := &data.Product{}
-
-	err := product.FromJSON(r.Body)
-	if err != nil {
-		http.Error(w, "Unable to unmarshal json", http.StatusBadRequest)
-	}
-
-	data.AddProduct(product)
+	data.AddProduct(&product)
 	w.WriteHeader(http.StatusCreated)
 }
 
 func (p *Products) UpdateProduct(w http.ResponseWriter, r *http.Request) {
 	p.l.Println("Handle PUT product")
-
 	vars := mux.Vars(r)
 	id, err := strconv.Atoi(vars["id"])
 	if err != nil {
@@ -55,13 +50,9 @@ func (p *Products) UpdateProduct(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	product := &data.Product{}
-	if err := product.FromJSON(r.Body); err != nil {
-		http.Error(w, "Unable to unmarshal json", http.StatusBadRequest)
-		return
-	}
+	product := r.Context().Value(KeyProduct{}).(data.Product)
 
-	err = data.UpdateProduct(id, product)
+	err = data.UpdateProduct(id, &product)
 	if err == data.ErrorProductNotFound {
 		http.Error(w, "Product not found", http.StatusNotFound)
 		return
@@ -72,4 +63,23 @@ func (p *Products) UpdateProduct(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusOK)
+}
+
+type KeyProduct struct{}
+
+func (p *Products) MiddlewareValidateProduct(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		product := &data.Product{}
+
+		err := product.FromJSON(r.Body)
+		if err != nil {
+			http.Error(w, "Unable to unmarshal json", http.StatusBadRequest)
+			return
+		}
+
+		ctx := context.WithValue(r.Context(), KeyProduct{}, product)
+		r = r.WithContext(ctx)
+
+		next.ServeHTTP(w, r)
+	})
 }

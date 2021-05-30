@@ -26,9 +26,11 @@ func main() {
 
 	postRouter := r.Methods("POST").Subrouter()
 	postRouter.HandleFunc("/products", productsHandler.AddProduct)
+	postRouter.Use(productsHandler.MiddlewareValidateProduct)
 
 	putRouter := r.Methods("PUT").Subrouter()
 	putRouter.HandleFunc("/products/{id:[0-9]+}", productsHandler.UpdateProduct)
+	putRouter.Use(productsHandler.MiddlewareValidateProduct)
 
 	// Create a server
 	server := &http.Server{
