@@ -1,9 +1,7 @@
 package data
 
 import (
-	"encoding/json"
 	"fmt"
-	"io"
 	"regexp"
 	"time"
 
@@ -24,11 +22,6 @@ type Product struct {
 	DeletedAt   string  `json:"-"`
 }
 
-func (p *Product) FromJSON(r io.Reader) error {
-	decoder := json.NewDecoder(r)
-	return decoder.Decode(p)
-}
-
 func (p *Product) Validate() error {
 	validate := validator.New()
 	validate.RegisterValidation("sku", validateSKU)
@@ -44,16 +37,6 @@ func validateSKU(fl validator.FieldLevel) bool {
 }
 
 type Products []*Product
-
-// ToJSON serializes the contents of the collection to JSON
-// NewEncoder provides better performance then json.Unmarshal as it does not have to
-// buffer the output into an in-memory slice of bytes
-// This reduces allocations and the overheads of the service
-// @see https://golang.org/pkg/encoding/json/#NewEncoder
-func (p *Products) ToJSON(w io.Writer) error {
-	encoder := json.NewEncoder(w)
-	return encoder.Encode(p)
-}
 
 func GetProducts() Products {
 	return productList

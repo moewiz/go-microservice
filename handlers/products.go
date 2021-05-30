@@ -16,6 +16,16 @@ type Products struct {
 	l *log.Logger
 }
 
+// Generic Error is a generic error message returned by a server
+type GenericError struct {
+	Message string `json:"message"`
+}
+
+// ValidationError is a collection of validation error messages
+type ValidationError struct {
+	Messages []string `json:"messages"`
+}
+
 func NewProducts(l *log.Logger) *Products {
 	return &Products{l}
 }
@@ -27,7 +37,7 @@ func (p *Products) GetProducts(w http.ResponseWriter, r *http.Request) {
 	productList := data.GetProducts()
 
 	// serialize the list to JSON
-	err := productList.ToJSON(w)
+	err := data.ToJSON(productList, w)
 	if err != nil {
 		http.Error(w, "Unable to marshal json", http.StatusInternalServerError)
 		return
@@ -35,10 +45,11 @@ func (p *Products) GetProducts(w http.ResponseWriter, r *http.Request) {
 }
 
 func (p *Products) AddProduct(w http.ResponseWriter, r *http.Request) {
-	p.l.Println("Handle POST product")
 	product := r.Context().Value(KeyProduct{}).(data.Product)
 
-	data.AddProduct(&product)
+	p.l.Printf("[DEBUG] Inserting product: %#v\n", product)
+
+	data.AddProduct(product)
 	w.WriteHeader(http.StatusCreated)
 }
 
@@ -66,15 +77,18 @@ func (p *Products) UpdateProduct(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
+// KeyProduct is a key used for the Product object in the context
 type KeyProduct struct{}
 
 func (p *Products) MiddlewareValidateProduct(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		product := data.Product{}
 
-		if err := product.FromJSON(r.Body); err != nil {
+		if err := data.FromJSON(&product, r.Body); err != nil {
 			p.l.Println("[ERROR] deserializing product", err)
-			http.Error(w, "Error reading product", http.StatusBadRequest)
+
+			w.WriteHeader(http.StatusBadRequest)
+			data.ToJSON(&GenericError{Message: err.Error()}, w)
 			return
 		}
 
