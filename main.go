@@ -8,6 +8,7 @@ import (
 	"os/signal"
 	"time"
 
+	"github.com/gorilla/mux"
 	"github.com/moewiz/go-microservice/handlers"
 )
 
@@ -18,13 +19,21 @@ func main() {
 	productsHandler := handlers.NewProducts(l)
 
 	// Create a new serve mux and register the handlers
-	sm := http.NewServeMux()
-	sm.Handle("/", productsHandler)
+	r := mux.NewRouter()
+
+	getRouter := r.Methods("GET").Subrouter()
+	getRouter.HandleFunc("/products", productsHandler.GetProducts)
+
+	postRouter := r.Methods("POST").Subrouter()
+	postRouter.HandleFunc("/products", productsHandler.AddProduct)
+
+	// putRouter := r.Methods("PUT").Subrouter()
+	// putRouter.HandleFunc("/products/{id:[0-9]+}", productsHandler.PutProducts)
 
 	// Create a server
 	server := &http.Server{
 		Addr:         ":9090",           // configure the bind address
-		Handler:      sm,                // default handlers
+		Handler:      r,                 // default handlers
 		ErrorLog:     l,                 // set the logger for the server
 		ReadTimeout:  5 * time.Second,   // max time to read the request from the client
 		WriteTimeout: 10 * time.Second,  // max time to write the response to the client
