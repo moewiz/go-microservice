@@ -44,9 +44,11 @@ func main() {
 
 	// Start the server
 	go func() {
+		l.Println("Starting server on port 9090")
+
 		err := server.ListenAndServe()
 		if err != nil {
-			l.Fatal(err)
+			l.Printf("Error starting server: %s\n", err)
 			os.Exit(1)
 		}
 	}()
