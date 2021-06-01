@@ -33,6 +33,9 @@ func main() {
 	putRouter.HandleFunc("/products/{id:[0-9]+}", productsHandler.UpdateProduct)
 	putRouter.Use(productsHandler.MiddlewareValidateProduct)
 
+	deleteRouter := r.Methods("DELETE").Subrouter()
+	deleteRouter.HandleFunc("/products/{id:[0-9]+}", productsHandler.DeleteProduct)
+
 	// Create a server
 	server := &http.Server{
 		Addr:         ":9090",           // configure the bind address
