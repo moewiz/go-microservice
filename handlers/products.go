@@ -1,8 +1,6 @@
 package handlers
 
 import (
-	"context"
-	"fmt"
 	"log"
 	"net/http"
 	"strconv"
@@ -49,7 +47,7 @@ func (p *Products) AddProduct(w http.ResponseWriter, r *http.Request) {
 
 	p.l.Printf("[DEBUG] Inserting product: %#v\n", product)
 
-	data.AddProduct(product)
+	data.AddProduct(&product)
 	w.WriteHeader(http.StatusCreated)
 }
 
@@ -79,35 +77,3 @@ func (p *Products) UpdateProduct(w http.ResponseWriter, r *http.Request) {
 
 // KeyProduct is a key used for the Product object in the context
 type KeyProduct struct{}
-
-func (p *Products) MiddlewareValidateProduct(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		product := data.Product{}
-
-		if err := data.FromJSON(&product, r.Body); err != nil {
-			p.l.Println("[ERROR] deserializing product", err)
-
-			w.WriteHeader(http.StatusBadRequest)
-			data.ToJSON(&GenericError{Message: err.Error()}, w)
-			return
-		}
-
-		// validate the product
-		if err := product.Validate(); err != nil {
-			p.l.Println("[ERROR] validating product", err)
-			http.Error(
-				w,
-				fmt.Sprintf("Error validating product: %s", err),
-				http.StatusBadRequest,
-			)
-			return
-		}
-
-		// add the product to the context
-		ctx := context.WithValue(r.Context(), KeyProduct{}, product)
-		r = r.WithContext(ctx)
-
-		// Call the next handler, which can be another middleware in the chain, or the final handler.
-		next.ServeHTTP(w, r)
-	})
-}
