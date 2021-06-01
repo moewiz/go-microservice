@@ -42,6 +42,27 @@ func (p *Products) GetProducts(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// GetProduct returns the product by product ID
+func (p *Products) GetProduct(w http.ResponseWriter, r *http.Request) {
+	productID, err := strconv.Atoi(mux.Vars(r)["id"])
+	if err != nil {
+		http.Error(w, "Unable to convert ID", http.StatusBadRequest)
+		return
+	}
+	p.l.Printf("Handle GET product/%d", productID)
+
+	product, err := data.GetProduct(productID)
+	if err == data.ErrorProductNotFound {
+		http.Error(w, "Product not found", http.StatusNotFound)
+		return
+	}
+	if err != nil {
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+	data.ToJSON(product, w)
+}
+
 func (p *Products) AddProduct(w http.ResponseWriter, r *http.Request) {
 	product := r.Context().Value(KeyProduct{}).(data.Product)
 
