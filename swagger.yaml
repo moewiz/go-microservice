@@ -1,0 +1,60 @@
+basePath: /
+consumes:
+- application/json
+definitions:
+  Product:
+    description: |-
+      Product defines the structure for an API endpoint
+      json
+      validator
+    properties:
+      description:
+        type: string
+        x-go-name: Description
+      id:
+        format: int64
+        type: integer
+        x-go-name: ID
+      name:
+        type: string
+        x-go-name: Name
+      price:
+        format: float
+        type: number
+        x-go-name: Price
+      sku:
+        type: string
+        x-go-name: SKU
+    type: object
+    x-go-package: github.com/moewiz/go-microservice/data
+info:
+  contact:
+    email: meo.wizard@gmail.com
+    name: Khoa Nguyen
+    url: http://github.com/moewiz
+  description: |-
+    Documentation for Product API
+
+    Schemas: http
+  title: of Product API
+  version: 1.0.0
+paths:
+  /products:
+    get:
+      description: Returns a list of products
+      operationId: listProducts
+      responses:
+        "200":
+          $ref: '#/responses/productsResponse'
+      tags:
+      - products
+produces:
+- application/json
+responses:
+  productsResponse:
+    description: A list of products returns in the response
+    schema:
+      items:
+        $ref: '#/definitions/Product'
+      type: array
+swagger: "2.0"
