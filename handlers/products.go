@@ -1,21 +1,7 @@
-//	Package classification of Product API
-//
-//	Documentation for Product API
-//
-//	Schemas: http
-// 	BasePath: /
-//	Version: 1.0.0
-// 	Contact: Khoa Nguyen<meo.wizard@gmail.com> http://github.com/moewiz
-//
-//	Consumes:
-// 	- application/json
-//
-//	Produces:
-// 	- application/json
-//	swagger:meta
 package handlers
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 	"strconv"
@@ -24,18 +10,20 @@ import (
 	"github.com/moewiz/go-microservice/data"
 )
 
-// A list of products returns in the response
-// swagger:response productsResponse
-type productsResponseWrapper struct {
-	// All products in the database
-	// in: body
-	Body []data.Product
-}
+// KeyProduct is a key used for the Product object in the context
+type KeyProduct struct{}
 
 // Products is a http.Handler
 type Products struct {
 	l *log.Logger
 }
+
+func NewProducts(l *log.Logger) *Products {
+	return &Products{l}
+}
+
+// ErrorInvalidProductPath is an error message when the product path is not valid
+var ErrorInvalidProductPath = fmt.Errorf("invalid path, path should be /products/{id}")
 
 // Generic Error is a generic error message returned by a server
 type GenericError struct {
@@ -47,14 +35,12 @@ type ValidationError struct {
 	Messages []string `json:"messages"`
 }
 
-func NewProducts(l *log.Logger) *Products {
-	return &Products{l}
-}
-
 // swagger:route GET /products products listProducts
 // Returns a list of products
-// responses:
+//
+// Responses:
 //	200: productsResponse
+//	500: errorResponse
 
 // GetProducts returns the products from the data storage
 func (p *Products) GetProducts(w http.ResponseWriter, r *http.Request) {
@@ -65,10 +51,18 @@ func (p *Products) GetProducts(w http.ResponseWriter, r *http.Request) {
 	// serialize the list to JSON
 	err := data.ToJSON(productList, w)
 	if err != nil {
-		http.Error(w, "Unable to marshal json", http.StatusInternalServerError)
+		http.Error(w, "[ERROR] Unable to marshal json", http.StatusInternalServerError)
 		return
 	}
 }
+
+// swagger:route GET /products/{id} products listSingle
+// Return a single product from the database
+//
+// Responses:
+//	200: productResponse
+//	404: errorResponse
+//	500: errorResponse
 
 // GetProduct returns the product by product ID
 func (p *Products) GetProduct(w http.ResponseWriter, r *http.Request) {
@@ -86,10 +80,24 @@ func (p *Products) GetProduct(w http.ResponseWriter, r *http.Request) {
 		data.ToJSON(&GenericError{Message: "Internal server error"}, w)
 		return
 	}
-	data.ToJSON(product, w)
+	err = data.ToJSON(product, w)
+	if err != nil {
+		// we should never be here but log the error just in case
+		http.Error(w, "[ERROR] Unable to marshal json", http.StatusInternalServerError)
+		return
+	}
 }
 
-func (p *Products) AddProduct(w http.ResponseWriter, r *http.Request) {
+// swagger:route POST /products products createProduct
+// Create a new product
+//
+// Responses:
+//	201: productResponse
+//	400: errorValidation
+//	422: errorValidation
+//	500: errorResponse
+
+func (p *Products) CreateProduct(w http.ResponseWriter, r *http.Request) {
 	product := r.Context().Value(KeyProduct{}).(data.Product)
 
 	p.l.Printf("[DEBUG] Inserting product: %#v\n", product)
@@ -98,6 +106,13 @@ func (p *Products) AddProduct(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusCreated)
 }
 
+// swagger:route PUT /products/{id} products updateProduct
+// Update the product
+//
+//	Responses:
+//		204: noContentResponse
+//		404: errorResponse
+//		500: errorResponse
 func (p *Products) UpdateProduct(w http.ResponseWriter, r *http.Request) {
 	id := getProductID(r)
 	p.l.Printf("Handle PUT product/%d", id)
@@ -116,9 +131,16 @@ func (p *Products) UpdateProduct(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.WriteHeader(http.StatusOK)
+	w.WriteHeader(http.StatusNoContent)
 }
 
+// swagger:route DELETE /products/{id} products deleteProduct
+// Delete the product from the database
+//
+//	Responses:
+//		204: noContentResponse
+//		404: errorResponse
+//		500: errorResponse
 func (p *Products) DeleteProduct(w http.ResponseWriter, r *http.Request) {
 	productID := getProductID(r)
 	p.l.Printf("[DEBUG] Handle DELETE product/%d", productID)
@@ -155,6 +177,3 @@ func getProductID(r *http.Request) int {
 
 	return productID
 }
-
-// KeyProduct is a key used for the Product object in the context
-type KeyProduct struct{}

@@ -9,17 +9,42 @@ import (
 )
 
 // Product defines the structure for an API endpoint
-// json
-// validator
+// swagger:model
 type Product struct {
-	ID          int     `json:"id"`
-	Name        string  `json:"name" validate:"required"`
-	Description string  `json:"description"`
-	Price       float32 `json:"price" validate:"gt=0"`
-	SKU         string  `json:"sku" validate:"required,sku"`
-	CreatedAt   string  `json:"-"`
-	UpdatedAt   string  `json:"-"`
-	DeletedAt   string  `json:"-"`
+	// the id for this product
+	//
+	// required: true
+	// unique: true
+	// min: 1
+	ID int `json:"id"` // Unique identifier for the product
+
+	// the name for this product
+	//
+	// required: true
+	// max length: 255
+	Name string `json:"name" validate:"required"`
+
+	// the description for this product
+	//
+	// required: false
+	// max length: 10000
+	Description string `json:"description"`
+
+	// the price for the product
+	//
+	// required: true
+	// min: 0.01
+	Price float32 `json:"price" validate:"gt=0"`
+
+	// the SKU for the product
+	//
+	// required: true
+	// pattern: [a-zA-Z]+-[0-9]+-[0-9]+
+	SKU string `json:"sku" validate:"required,sku"`
+
+	CreatedAt string `json:"-"`
+	UpdatedAt string `json:"-"`
+	DeletedAt string `json:"-"`
 }
 
 func (p *Product) Validate() error {

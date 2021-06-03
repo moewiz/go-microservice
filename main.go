@@ -27,7 +27,7 @@ func main() {
 	getRouter.HandleFunc("/products/{id:[0-9]+}", productsHandler.GetProduct)
 
 	postRouter := r.Methods("POST").Subrouter()
-	postRouter.HandleFunc("/products", productsHandler.AddProduct)
+	postRouter.HandleFunc("/products", productsHandler.CreateProduct)
 	postRouter.Use(productsHandler.MiddlewareValidateProduct)
 
 	putRouter := r.Methods("PUT").Subrouter()
