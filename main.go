@@ -8,6 +8,7 @@ import (
 	"os/signal"
 	"time"
 
+	"github.com/go-openapi/runtime/middleware"
 	"github.com/gorilla/mux"
 	"github.com/moewiz/go-microservice/handlers"
 )
@@ -35,6 +36,13 @@ func main() {
 
 	deleteRouter := r.Methods("DELETE").Subrouter()
 	deleteRouter.HandleFunc("/products/{id:[0-9]+}", productsHandler.DeleteProduct)
+
+	// Serve API Docs page
+	opts := middleware.RedocOpts{SpecURL: "/swagger.yaml"}
+	sh := middleware.Redoc(opts, nil)
+	getRouter.Handle("/docs", sh)
+	getRouter.Handle("/swagger.yaml", http.FileServer(http.Dir("./")))
+	getRouter.Handle("/README", http.FileServer(http.Dir("./")))
 
 	// Create a server
 	server := &http.Server{

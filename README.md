@@ -1,6 +1,6 @@
 <h1 align="center">Building first Microservices with Go</h1>
 
-<p>Instered in Go; want to understand more about Go; that's why I started building a microservice with the Go language</p>
+<p>Interested in Go; want to understand more about Go; that's why I started building a microservice with the Go language</p>
 
 ## Knowledges in the project
 
@@ -20,4 +20,4 @@
 
 ## Thanks to
 
-- [Nic Jackson]( https://www.youtube.com/channel/UC2V1SxXFUa5YxVJvTsrCgyg )
+- [Nic Jackson](https://www.youtube.com/channel/UC2V1SxXFUa5YxVJvTsrCgyg)
