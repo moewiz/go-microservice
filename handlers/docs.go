@@ -73,7 +73,7 @@ type productParamsWrapper struct {
 	Body data.Product
 }
 
-// swagger:parameters deleteProduct updateProduct
+// swagger:parameters listSingleProduct deleteProduct updateProduct
 type productIDParamsWrapper struct {
 	// The id of the product for which the operation relates
 	//
