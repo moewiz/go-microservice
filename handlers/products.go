@@ -48,6 +48,8 @@ func (p *Products) GetProducts(w http.ResponseWriter, r *http.Request) {
 	// fetch the products from the data storage
 	productList := data.GetProducts()
 
+	w.Header().Add("Content-Type", "application/json")
+
 	// serialize the list to JSON
 	err := data.ToJSON(productList, w)
 	if err != nil {
