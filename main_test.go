@@ -8,7 +8,7 @@ import (
 	"github.com/moewiz/go-microservice/sdk/client/products"
 )
 
-func TestOutClient(t *testing.T) {
+func TestGetProducts(t *testing.T) {
 	cfg := client.DefaultTransportConfig().WithHost("localhost:9090")
 	c := client.NewHTTPClientWithConfig(nil, cfg)
 
