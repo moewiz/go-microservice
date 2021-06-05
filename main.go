@@ -10,14 +10,16 @@ import (
 
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/gorilla/mux"
+	"github.com/moewiz/go-microservice/data"
 	"github.com/moewiz/go-microservice/handlers"
 )
 
 func main() {
 	l := log.New(os.Stdout, "moewiz-service", log.LstdFlags)
+	v := data.NewValidation()
 
 	// Create the handlers
-	productsHandler := handlers.NewProducts(l)
+	productsHandler := handlers.NewProducts(l, v)
 
 	// Create a new serve mux and register the handlers
 	r := mux.NewRouter()
