@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/go-openapi/runtime/middleware"
+	gohandlers "github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"github.com/moewiz/go-microservice/data"
 	"github.com/moewiz/go-microservice/handlers"
@@ -46,10 +47,13 @@ func main() {
 	getRouter.Handle("/swagger.yaml", http.FileServer(http.Dir("./")))
 	getRouter.Handle("/README", http.FileServer(http.Dir("./")))
 
+	// CORS
+	ch := gohandlers.CORS(gohandlers.AllowedOrigins([]string{"http://localhost:3000"}))
+
 	// Create a server
 	server := &http.Server{
 		Addr:         ":9090",           // configure the bind address
-		Handler:      r,                 // default handlers
+		Handler:      ch(r),             // default handlers
 		ErrorLog:     l,                 // set the logger for the server
 		ReadTimeout:  5 * time.Second,   // max time to read the request from the client
 		WriteTimeout: 10 * time.Second,  // max time to write the response to the client
