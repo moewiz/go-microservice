@@ -1,4 +1,4 @@
-module github.com/moewiz/go-microservice
+module github.com/moewiz/go-microservice/product-api
 
 go 1.16
 
