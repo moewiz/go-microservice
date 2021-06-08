@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -10,6 +11,7 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
+	"github.com/moewiz/go-microservice/product-images/config"
 )
 
 func main() {
@@ -18,11 +20,8 @@ func main() {
 	if err := godotenv.Load(); err != nil {
 		l.Fatal("[ERROR] Error loading .env file")
 	}
-
-	bindAddress, exists := os.LookupEnv("BIND_ADDRESS")
-	if !exists {
-		bindAddress = "localhost:9090"
-	}
+	conf := config.NewConfig()
+	bindAddress := fmt.Sprintf("%s:%d", conf.Server.BindAddress, conf.Server.PORT)
 
 	// Create a new serve mux and register handlers
 	sm := mux.NewRouter()
