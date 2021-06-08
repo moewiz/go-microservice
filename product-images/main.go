@@ -12,6 +12,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
 	"github.com/moewiz/go-microservice/product-images/config"
+	"github.com/moewiz/go-microservice/product-images/handlers"
 )
 
 func main() {
@@ -21,14 +22,19 @@ func main() {
 		l.Fatal("[ERROR] Error loading .env file")
 	}
 	conf := config.NewConfig()
-	bindAddress := fmt.Sprintf("%s:%d", conf.Server.BindAddress, conf.Server.PORT)
+	serverAddress := fmt.Sprintf("%s:%d", conf.Server.BindAddress, conf.Server.PORT)
 
+	// Create the Files handler
+	filesHandler := handlers.NewFiles(conf.Storage.BasePath, l)
 	// Create a new serve mux and register handlers
 	sm := mux.NewRouter()
 
+	postRouter := sm.Methods(http.MethodPost).Subrouter()
+	postRouter.HandleFunc("/images/{id:[0-9]+}/{filename:[a-zA-Z]+\\.[a-z]{3}}", filesHandler.ServeHTTP)
+
 	// Create a server
 	server := &http.Server{
-		Addr:         bindAddress,       // configure the bind address
+		Addr:         serverAddress,     // configure the bind address
 		Handler:      sm,                // default handlers
 		ErrorLog:     l,                 // set the logger for the server
 		ReadTimeout:  5 * time.Second,   // max time to read the request from the client
@@ -38,7 +44,7 @@ func main() {
 
 	// Start the server
 	go func() {
-		l.Println("[INFO] Starting the server:", bindAddress)
+		l.Println("[INFO] Starting the server", serverAddress)
 		if err := server.ListenAndServe(); err != nil {
 			l.Println("[ERROR] Unable to start server", err)
 			os.Exit(1)
