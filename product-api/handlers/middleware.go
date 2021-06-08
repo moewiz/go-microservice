@@ -4,7 +4,7 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/moewiz/go-microservice/data"
+	"github.com/moewiz/go-microservice/product-api/data"
 )
 
 // MiddlewareValidateProduct validates the product in the request before calls next http.HandlerFunc

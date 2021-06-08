@@ -7,7 +7,7 @@ import (
 	"strconv"
 
 	"github.com/gorilla/mux"
-	"github.com/moewiz/go-microservice/data"
+	"github.com/moewiz/go-microservice/product-api/data"
 )
 
 // KeyProduct is a key used for the Product object in the context
