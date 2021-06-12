@@ -12,6 +12,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
 	"github.com/moewiz/go-microservice/product-images/config"
+	"github.com/moewiz/go-microservice/product-images/files"
 	"github.com/moewiz/go-microservice/product-images/handlers"
 )
 
@@ -20,17 +21,26 @@ func main() {
 
 	if err := godotenv.Load(); err != nil {
 		l.Fatal("[ERROR] Error loading .env file")
+		os.Exit(1)
 	}
 	conf := config.NewConfig()
 	serverAddress := fmt.Sprintf("%s:%d", conf.Server.BindAddress, conf.Server.PORT)
 
+	// create the storage class, use local storage
+	// max filesize 5MB
+	store, err1 := files.NewLocalStorage(conf.Storage.BasePath, 5*1000*1024)
+	if err1 != nil {
+		l.Println("[ERROR] Unable to create storage", "error", err1)
+		os.Exit(1)
+	}
+
 	// Create the Files handler
-	filesHandler := handlers.NewFiles(conf.Storage.BasePath, l)
+	filesHandler := handlers.NewFiles(store, l)
 	// Create a new serve mux and register handlers
 	sm := mux.NewRouter()
 
 	postRouter := sm.Methods(http.MethodPost).Subrouter()
-	postRouter.HandleFunc("/images/{id:[0-9]+}/{filename:[a-zA-Z]+\\.[a-z]{3}}", filesHandler.ServeHTTP)
+	postRouter.HandleFunc("/images/{id:[0-9]+}/{filename:[a-z\\-A-Z]+\\.[a-z]{3}}", filesHandler.ServeHTTP)
 
 	// Create a server
 	server := &http.Server{

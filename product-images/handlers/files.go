@@ -3,19 +3,21 @@ package handlers
 import (
 	"log"
 	"net/http"
+	"path/filepath"
 
 	"github.com/gorilla/mux"
+	"github.com/moewiz/go-microservice/product-images/files"
 )
 
 // Files is a handler for reading and writing files
 type Files struct {
-	storePath string
-	log       *log.Logger
+	storage files.Storage
+	log     *log.Logger
 }
 
 // Create a new Files handler
-func NewFiles(s string, l *log.Logger) *Files {
-	return &Files{storePath: s, log: l}
+func NewFiles(s files.Storage, l *log.Logger) *Files {
+	return &Files{storage: s, log: l}
 }
 
 // ServeHTTP implements the http.Handler interfacec
@@ -24,16 +26,19 @@ func (f *Files) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	id := vars["id"]
 	filename := vars["filename"]
 
-	f.log.Println("[INFO] Handle POST", "id=", id, "filename=", filename)
-
-	// check that the filepath is a valid name and file
-	if id == "" || filename == "" {
-		return
-	}
+	f.log.Println("[INFO] Handle POST", "id", id, "filename", filename)
 
 	f.saveFile(id, filename, w, r)
 }
 
+// saveFile saves the contents of the request to a file
 func (f *Files) saveFile(id, filename string, w http.ResponseWriter, r *http.Request) {
-	f.log.Println("[INFO] Saving file to physical disk")
+	f.log.Println("[INFO] Save file for product", "id", id, "filename", filename)
+
+	fp := filepath.Join(id, filename)
+	err := f.storage.Save(fp, r.Body)
+	if err != nil {
+		f.log.Println("[ERROR] Unable to save file", "error", err)
+		http.Error(w, "Unable to save file", http.StatusInternalServerError)
+	}
 }
