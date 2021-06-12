@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/moewiz/go-microservice/sdk/client"
-	"github.com/moewiz/go-microservice/sdk/client/products"
+	"github.com/moewiz/go-microservice/product-api/sdk/client"
+	"github.com/moewiz/go-microservice/product-api/sdk/client/products"
 )
 
 func TestGetProducts(t *testing.T) {
