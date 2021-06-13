@@ -42,6 +42,12 @@ func main() {
 	postRouter := sm.Methods(http.MethodPost).Subrouter()
 	postRouter.HandleFunc("/images/{id:[0-9]+}/{filename:[a-z\\-A-Z]+\\.[a-z]{3}}", filesHandler.ServeHTTP)
 
+	getRouter := sm.Methods(http.MethodGet).Subrouter()
+	getRouter.Handle(
+		"/images/{id:[0-9]+}/{filename:[a-z\\-A-Z]+\\.[a-z]{3}}",
+		http.StripPrefix("/images/", http.FileServer(http.Dir(conf.Storage.BasePath))),
+	)
+
 	// Create a server
 	server := &http.Server{
 		Addr:         serverAddress,     // configure the bind address
