@@ -9,6 +9,7 @@ import (
 	"os/signal"
 	"time"
 
+	gohandlers "github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
 	"github.com/moewiz/go-microservice/product-images/config"
@@ -38,9 +39,11 @@ func main() {
 	filesHandler := handlers.NewFiles(store, l)
 	// Create a new serve mux and register handlers
 	sm := mux.NewRouter()
+	ch := gohandlers.CORS(gohandlers.AllowedOrigins([]string{"*"}))
 
 	postRouter := sm.Methods(http.MethodPost).Subrouter()
-	postRouter.HandleFunc("/images/{id:[0-9]+}/{filename:[a-z\\-A-Z]+\\.[a-z]{3}}", filesHandler.ServeHTTP)
+	postRouter.HandleFunc("/images/{id:[0-9]+}/{filename:[a-z\\-A-Z]+\\.[a-z]{3}}", filesHandler.UploadREST)
+	postRouter.HandleFunc("/", filesHandler.UploadMultipart)
 
 	getRouter := sm.Methods(http.MethodGet).Subrouter()
 	getRouter.Handle(
@@ -51,7 +54,7 @@ func main() {
 	// Create a server
 	server := &http.Server{
 		Addr:         serverAddress,     // configure the bind address
-		Handler:      sm,                // default handlers
+		Handler:      ch(sm),            // default handlers
 		ErrorLog:     l,                 // set the logger for the server
 		ReadTimeout:  5 * time.Second,   // max time to read the request from the client
 		WriteTimeout: 10 * time.Second,  // max time to write the response to the client
