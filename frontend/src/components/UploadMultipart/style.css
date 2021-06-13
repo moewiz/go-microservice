@@ -1,0 +1,12 @@
+.upload-multipart label {
+  display: block;
+  margin-bottom: 0.5em;
+}
+
+.upload-multipart label input {
+  margin-left: 0.5em;
+}
+
+.upload-multipart input[type="submit"] {
+  display: block;
+}

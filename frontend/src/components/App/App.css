@@ -2,3 +2,11 @@
   text-align: center;
   font-size: calc(10px + 2vmin);
 }
+
+.App {
+  padding: 2em 1em;
+}
+
+hr {
+  margin: 1em 0;
+}
