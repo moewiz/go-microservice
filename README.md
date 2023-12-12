@@ -2,14 +2,14 @@
 
 <p>Interested in Go; want to understand more about Go; that's why I started building a microservice with the Go language</p>
 
-## Knowledges in the project
+## Knowledge in the project
 
 - RESTful microservices
 - gRPC microservices
 - Swagger
 - Packaging applications with Docker
 - Testing microservice
-- Continuous Delievery
+- Continuous Delivery
 - Observability
 - Using Kubernetes
 - Debugging
